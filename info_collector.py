@@ -50,7 +50,8 @@ class Collector():
             disk_info = {
                  'du_total': self._convert_bytes(du.total),
                  'du_used' : self._convert_bytes(du.used),
-                 'du_free' : self._convert_bytes(du.free)
+                 'du_free' : self._convert_bytes(du.free),
+                 'du_percent': du.percent
             }
             dd[part.device] = disk_info
         return dd
