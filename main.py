@@ -1,4 +1,5 @@
 from lookout import PyLookout
 
-lk = PyLookout()
-lk.checker()
+def main():
+    lk = PyLookout()
+    lk.checker()
