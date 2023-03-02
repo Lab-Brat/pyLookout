@@ -1,4 +1,6 @@
+from os import getenv
 from info_collector import Collector
+from urllib import request, parse
 
 
 class PyLookout:
@@ -20,7 +22,17 @@ class PyLookout:
         Send a notification.
         (right now it's just a print statement).
         """
-        print(f"Danger! ---> {metric} = {percent}")
+        api_key = getenv("SIMPLEPUSH")
+        data = parse.urlencode(
+            {
+                "key": api_key,
+                "title": "pyLookout!",
+                "msg": f"Danger! ---> {metric} = {percent}",
+                "event": "event",
+            }
+        ).encode()
+        req = request.Request("https://api.simplepush.io/send", data=data)
+        request.urlopen(req)
 
     def checker(self):
         """
