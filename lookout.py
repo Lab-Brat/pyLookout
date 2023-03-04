@@ -2,9 +2,12 @@ from os import getenv
 from urllib import request, parse
 from info_collector import Collector
 
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Email, To, Content
+
 
 class PyLookout:
-    def __init__(self, threshold=75, method="local"):
+    def __init__(self, threshold=75, method="sendgrid"):
         self.info = Collector()
         self.critical = threshold
         self.method = method
@@ -20,7 +23,7 @@ class PyLookout:
 
     def _simple_push(self, metric, percent):
         """
-        Send notification using Simplepush
+        Send notifications using Simplepush.
         """
         api_key = getenv("SIMPLEPUSH")
         data = parse.urlencode(
@@ -34,17 +37,39 @@ class PyLookout:
         req = request.Request("https://api.simplepush.io/send", data=data)
         request.urlopen(req)
 
+    def _sendgrid(self, metric, percent):
+        """
+        Send notifications using SengGrid.
+        """
+        api_key = getenv("SENDGRID_API_KEY")
+        email_from = Email(getenv("SENDGRID_FROM"))
+        email_to = To(getenv("SENDGRID_TO"))
+
+        subject = "pyLookout notifications"
+        content = Content("text/plain", f"Danger! ---> {metric} = {percent}")
+        mail = Mail(email_from, email_to, subject, content)
+
+        response = SendGridAPIClient(api_key).client.mail.send.post(
+            request_body=mail.get()
+        )
+
+        if response.status_code == 202:
+            print("Email sent succsessfully!")
+
     def _notify(self, metric, percent):
         """
         Send a notification.
         Available methods:
             * local (print to console)
             * simplepush
+            * sendgrid
         """
         if self.method == "local":
             print(f"Danger! ---> {metric} = {percent}")
         elif self.method == "simplepush":
             self._simple_push(metric, percent)
+        elif self.method == "sendgrid":
+            self._sendgrid(metric, percent)
 
     def checker(self):
         """
