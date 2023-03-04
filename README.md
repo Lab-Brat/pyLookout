@@ -43,4 +43,4 @@ python main.py
 It will gather server metrics and send a notificationa 
 via preferred method.
 
-It can be added to crontab to be ran on a schedule.
+Add it to crontab to run on a schedule.

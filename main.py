@@ -2,7 +2,9 @@ from lookout import PyLookout
 
 
 def main():
-    lk = PyLookout()
+    threshold = 75
+    notification_method = "sendgrid"
+    lk = PyLookout(threshold, notification_method)
     lk.checker()
 
 
