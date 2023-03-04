@@ -1,12 +1,13 @@
 from os import getenv
-from info_collector import Collector
 from urllib import request, parse
+from info_collector import Collector
 
 
 class PyLookout:
-    def __init__(self, threshold=80):
+    def __init__(self, threshold=75, method="local"):
         self.info = Collector()
         self.critical = threshold
+        self.method = method
 
     def _stressed(self, metric, percent):
         """
@@ -17,10 +18,9 @@ class PyLookout:
         if stressed:
             self._notify(metric, percent)
 
-    def _notify(self, metric, percent):
+    def _simple_push(self, metric, percent):
         """
-        Send a notification.
-        (right now it's just a print statement).
+        Send notification using Simplepush
         """
         api_key = getenv("SIMPLEPUSH")
         data = parse.urlencode(
@@ -33,6 +33,18 @@ class PyLookout:
         ).encode()
         req = request.Request("https://api.simplepush.io/send", data=data)
         request.urlopen(req)
+
+    def _notify(self, metric, percent):
+        """
+        Send a notification.
+        Available methods:
+            * local (print to console)
+            * simplepush
+        """
+        if self.method == "local":
+            print(f"Danger! ---> {metric} = {percent}")
+        elif self.method == "simplepush":
+            self._simple_push(metric, percent)
 
     def checker(self):
         """
