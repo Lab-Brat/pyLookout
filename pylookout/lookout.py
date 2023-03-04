@@ -1,6 +1,6 @@
 from os import getenv
 from urllib import request, parse
-from info_collector import Collector
+from .info_collector import Collector
 
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Email, To, Content
@@ -81,3 +81,14 @@ class PyLookout:
 
         for disk in self.info.disks_info.values():
             self._stressed("DISK", disk["du_percent"])
+
+
+def main():
+    threshold = 75
+    notification_method = "sendgrid"
+    lk = PyLookout(threshold, notification_method)
+    lk.checker()
+
+
+if __name__ == "__main__":
+    main()

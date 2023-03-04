@@ -1,7 +1,4 @@
-import pathlib
-from setuptools import setup, find_packages
-
-here = pathlib.Path(__file__).parent.resolve()
+from setuptools import setup
 
 with open("./README.md", "r") as rm:
     long_description = rm.read()
@@ -21,12 +18,7 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Operating System :: Linux",
     ],
-    packages=find_packages(),
-    scripts=[
-        "main.py",
-        "info_collector.py",
-        "lookout.py",
-    ],
+    packages=["pylookout"],
     install_requires=[
         "psutil",
         "sendgrid",
@@ -34,7 +26,7 @@ setup(
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
-            "pylookout = main:main",
+            "pylookout = pylookout.lookout:main",
         ],
     },
 )
