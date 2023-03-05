@@ -10,37 +10,44 @@ Currently it can:
 Planned functionality:
 * Send notifications via Telegram, WhatsApp and IRC.
 * Check container status.
-* Report new active session.
+* Report new active SSH sessions.
 * Monitor logs to find suspicious activity.
-* Run continuously as a service. 
+* Run continuously as a service in the background. 
 
 ### Installation
-To install the app, run:
-```
-python -m pip install pylookout
+To install the app, clone the repository and install with pip:
+```bash
+git clone https://github.com/Lab-Brat/pyLookout.git
+cd pyLookout
+python -m pip install .
 ```
 
 ### Usage
 To send notifications pyLookout reads API keys from 
 the environment.  
 
-SendGrid variables:
+SendGrid requires to specify sending and destination 
+email addresses, and also an API key:
 ```
-export SENDGRID_TO='<send-to-email>@<mail>.com'
-export SENDGRID_FROM='<verified-sender>@<mail>.com'
-export SENDGRID_API_KEY='.......'
+SENDGRID_TO
+SENDGRID_FROM
+SENDGRID_API_KEY
 ```  
 
-Simplepush
+Simplepush requires only the API key and sends notifications 
+to the app"
 ```
-export SIMPLEPUSH='.......'
+SIMPLEPUSH
 ```  
 
-To run the program, just run:
-```
-python main.py
+To run the program, first install it with pip. 
+It will create an executable in `/home/$USER/.local/bin/`, 
+(which should be in $PATH), and launch it:
+```bash
+pylookout
 ```
 It will gather server metrics and send a notificationa 
-via preferred method.
+via preferred method if a certain total utilization percentage
+is reached (75% by default).
 
 Add it to crontab to run on a schedule.
