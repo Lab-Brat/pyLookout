@@ -1,3 +1,4 @@
+import os
 from psutil import (
     cpu_count,
     cpu_percent,
@@ -25,6 +26,9 @@ class Collector:
     partitions: list = field(default_factory=list)
     disks_info: dict = field(default_factory=dict)
 
+    # Containers info
+    containers: dict = field(default_factory=dict)
+
     def __post_init__(self):
         self.cpu_detail = {
             f"Core{i}": p for i, p in enumerate(cpu_percent(percpu=True, interval=1))
@@ -40,6 +44,7 @@ class Collector:
             if "loop" not in part.device and "boot" not in part.mountpoint
         ]
         self.disks_info = self._disks_info()
+        self.containers = self._get_containers()
 
     def _disks_info(self):
         """
@@ -58,6 +63,26 @@ class Collector:
             dd[part.device] = disk_info
         return dd
 
+    def _get_containers(self):
+        """
+        Get outpus of `docker ps` command,
+        and parse all container information from it.
+        """
+        containers_parsed = {}
+        docker_ps = os.popen("docker ps").read().split("\n")
+        containers = docker_ps[1:-1]
+        for c in containers:
+            c = c.split()
+            container = {
+                "id": c[0],
+                "image": c[1],
+                "command": c[2],
+                "created": " ".join(c[3:6]),
+                "status": " ".join(c[6:9]),
+            }
+            containers_parsed[container["id"]] = container
+        return containers_parsed
+
     def _convert_bytes(self, bytes, suffix="B"):
         """
         Convert bytes into human readable form
@@ -70,3 +95,8 @@ class Collector:
             if bytes < factor:
                 return f"{bytes:.2f}{unit}{suffix}"
             bytes /= factor
+
+
+if __name__ == "__main__":
+    cc = Collector()
+    print(cc.containers)
