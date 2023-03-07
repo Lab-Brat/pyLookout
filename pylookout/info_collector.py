@@ -32,7 +32,8 @@ class Collector:
 
     def __post_init__(self):
         self.cpu_detail = {
-            f"Core{i}": p for i, p in enumerate(cpu_percent(percpu=True, interval=1))
+            f"Core{i}": p
+            for i, p in enumerate(cpu_percent(percpu=True, interval=1))
         }
 
         self.ram_total = self._convert_bytes(ram().total)
@@ -88,7 +89,9 @@ class Collector:
         docker_ps = os.popen("docker ps | awk '{print $1}'").read().split("\n")
         container_ids = docker_ps[1:-1]
         for container in container_ids:
-            inspect = json.loads(os.popen(f"docker inspect {container}").read())[0]
+            inspect = json.loads(
+                os.popen(f"docker inspect {container}").read()
+            )[0]
             container = self._inspect_container(inspect)
             containers_parsed[container["id"]] = container
         return containers_parsed
