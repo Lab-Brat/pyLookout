@@ -64,6 +64,21 @@ class Collector:
             dd[part.device] = disk_info
         return dd
 
+    def _inspect_container(self, inspect):
+        """
+        Read output of 'docker compose <id>' in string format,
+        return a dictionary of useful values.
+        """
+        return {
+            "id": inspect["Id"][0:12],
+            "id_full": inspect["Id"],
+            "image": inspect["Config"]["Image"],
+            "command": " ".join(inspect["Config"]["Cmd"]),
+            "created": inspect["Created"],
+            "started": inspect["State"]["StartedAt"],
+            "status": inspect["State"]["Status"],
+        }
+
     def _get_containers(self):
         """
         Get outpus of `docker ps` command,
@@ -74,15 +89,7 @@ class Collector:
         container_ids = docker_ps[1:-1]
         for container in container_ids:
             inspect = json.loads(os.popen(f"docker inspect {container}").read())[0]
-            container = {
-                "id": container,
-                "id_full": inspect["Id"],
-                "image": inspect["Config"]["Image"],
-                "command": " ".join(inspect["Config"]["Cmd"]),
-                "created": inspect["Created"],
-                "started": inspect["State"]["StartedAt"],
-                "status": inspect["State"]["Status"],
-            }
+            container = self._inspect_container(inspect)
             containers_parsed[container["id"]] = container
         return containers_parsed
 
