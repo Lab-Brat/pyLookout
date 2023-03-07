@@ -1,4 +1,5 @@
 import os
+import json
 from psutil import (
     cpu_count,
     cpu_percent,
@@ -69,16 +70,18 @@ class Collector:
         and parse all container information from it.
         """
         containers_parsed = {}
-        docker_ps = os.popen("docker ps").read().split("\n")
-        containers = docker_ps[1:-1]
-        for c in containers:
-            c = c.split()
+        docker_ps = os.popen("docker ps | awk '{print $1}'").read().split("\n")
+        container_ids = docker_ps[1:-1]
+        for container in container_ids:
+            inspect = json.loads(os.popen(f"docker inspect {container}").read())[0]
             container = {
-                "id": c[0],
-                "image": c[1],
-                "command": c[2],
-                "created": " ".join(c[3:6]),
-                "status": " ".join(c[6:9]),
+                "id": container,
+                "id_full": inspect["Id"],
+                "image": inspect["Config"]["Image"],
+                "command": " ".join(inspect["Config"]["Cmd"]),
+                "created": inspect["Created"],
+                "started": inspect["State"]["StartedAt"],
+                "status": inspect["State"]["Status"],
             }
             containers_parsed[container["id"]] = container
         return containers_parsed
@@ -99,4 +102,6 @@ class Collector:
 
 if __name__ == "__main__":
     cc = Collector()
-    print(cc.containers)
+    from pprint import pprint
+
+    pprint(cc.containers)
