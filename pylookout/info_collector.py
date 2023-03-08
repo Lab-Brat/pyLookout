@@ -86,7 +86,9 @@ class Collector:
         and parse all container information from it.
         """
         containers_parsed = {}
-        docker_ps = os.popen("docker ps | awk '{print $1}'").read().split("\n")
+        docker_ps = (
+            os.popen("docker ps -a | awk '{print $1}'").read().split("\n")
+        )
         container_ids = docker_ps[1:-1]
         for container in container_ids:
             inspect = json.loads(
