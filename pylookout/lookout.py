@@ -1,6 +1,6 @@
 from os import getenv
 from urllib import request, parse
-from info_collector import Collector
+from .info_collector import Collector
 
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Email, To, Content
