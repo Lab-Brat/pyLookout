@@ -71,6 +71,7 @@ class Collector:
         return a dictionary of useful values.
         """
         return {
+            "name": inspect["Name"],
             "id": inspect["Id"][0:12],
             "id_full": inspect["Id"],
             "image": inspect["Config"]["Image"],

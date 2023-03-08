@@ -1,6 +1,6 @@
 from os import getenv
 from urllib import request, parse
-from .info_collector import Collector
+from info_collector import Collector
 
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Email, To, Content
@@ -71,6 +71,19 @@ class PyLookout:
         elif self.method == "sendgrid":
             self._sendgrid(metric, percent)
 
+    def _containers_status(self, containers):
+        """
+        Check all container statuses,
+        send notifications if monitored container is down.
+        """
+        for container in containers.values():
+            if container["status"] != "running":
+                name = container["name"].replace("/", "")
+                self._notify(
+                    f"CONTAINER {name} ({container['id']})",
+                    container["status"].upper(),
+                )
+
     def checker(self):
         """
         One by one check if CPU, RAM and Disk space
@@ -82,10 +95,12 @@ class PyLookout:
         for disk in self.info.disks_info.values():
             self._stressed("DISK", disk["du_percent"])
 
+        self._containers_status(self.info.containers)
+
 
 def main():
     threshold = 75
-    notification_method = "sendgrid"
+    notification_method = "local"
     lk = PyLookout(threshold, notification_method)
     lk.checker()
 
