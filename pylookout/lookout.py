@@ -11,7 +11,7 @@ class PyLookout:
         self.info = Collector()
         self.critical = threshold
         self.method = method
-        self.notification = ""
+        self.notification = []
 
     def _messge_percent(self, metric, percent):
         """
@@ -24,16 +24,7 @@ class PyLookout:
         )
         return msg
 
-    def _stressed(self, metric, percent):
-        """
-        Compare a metric with the critical value.
-        """
-        stressed = True if percent > self.critical else False
-
-        if stressed:
-            self._notify(metric, percent)
-
-    def _simple_push(self, metric, percent):
+    def _simple_push(self):
         """
         Send notifications using Simplepush.
         """
@@ -42,14 +33,14 @@ class PyLookout:
             {
                 "key": api_key,
                 "title": "pyLookout!",
-                "msg": self._messge_percent(metric, percent),
+                "msg": "\n".join(self.notification),
                 "event": "event",
             }
         ).encode()
         req = request.Request("https://api.simplepush.io/send", data=data)
         request.urlopen(req)
 
-    def _sendgrid(self, metric, percent):
+    def _sendgrid(self):
         """
         Send notifications using SengGrid.
         """
@@ -58,7 +49,7 @@ class PyLookout:
         email_to = To(getenv("SENDGRID_TO"))
 
         subject = "pyLookout notifications"
-        content = Content("text/plain", self._messge_percent(metric, percent))
+        content = Content("text/plain", "\n".join(self.notification))
         mail = Mail(email_from, email_to, subject, content)
 
         response = SendGridAPIClient(api_key).client.mail.send.post(
@@ -68,7 +59,7 @@ class PyLookout:
         if response.status_code == 202:
             print("Email sent succsessfully!")
 
-    def _notify(self, metric, percent):
+    def _notify(self):
         """
         Send a notification.
         Available methods:
@@ -77,11 +68,11 @@ class PyLookout:
             * sendgrid
         """
         if self.method == "local":
-            print(self._messge_percent(metric, percent))
+            [print(notification) for notification in self.notification]
         elif self.method == "simplepush":
-            self._simple_push(metric, percent)
+            self._simple_push()
         elif self.method == "sendgrid":
-            self._sendgrid(metric, percent)
+            self._sendgrid()
 
     def _containers_status(self, containers):
         """
@@ -91,10 +82,19 @@ class PyLookout:
         for container in containers.values():
             if container["status"] != "running":
                 name = container["name"].replace("/", "")
-                self._notify(
-                    f"CONTAINER {name} ({container['id']})",
-                    container["status"].upper(),
+                self.notification.append(
+                    f"CONTAINER {name} ({container['id']}) "
+                    f"{container['status'].upper()}\n"
                 )
+
+    def _stressed(self, metric, percent):
+        """
+        Compare a metric with the critical value.
+        """
+        stressed = True if percent > self.critical else False
+
+        if stressed:
+            self.notification.append(self._messge_percent(metric, percent))
 
     def checker(self):
         """
@@ -109,10 +109,13 @@ class PyLookout:
 
         self._containers_status(self.info.containers)
 
+        if self.notification:
+            self._notify()
+
 
 def main():
     threshold = 75
-    notification_method = "local"
+    notification_method = "simplepush"
     lk = PyLookout(threshold, notification_method)
     lk.checker()
 
