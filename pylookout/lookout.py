@@ -17,11 +17,7 @@ class PyLookout:
         """
         Notification message.
         """
-        msg = (
-            f"Alert on host {self.info.hostname}!\n"
-            f"Metric: {metric}\n"
-            f"Utilization: {percent}%\n"
-        )
+        msg = f"Metric: {metric}\nUtilization: {percent}%\n"
         return msg
 
     def _simple_push(self):
@@ -32,7 +28,7 @@ class PyLookout:
         data = parse.urlencode(
             {
                 "key": api_key,
-                "title": "pyLookout!",
+                "title": f"pyLookout on {self.info.hostname}\n",
                 "msg": "\n".join(self.notification),
                 "event": "event",
             }
@@ -48,7 +44,7 @@ class PyLookout:
         email_from = Email(getenv("SENDGRID_FROM"))
         email_to = To(getenv("SENDGRID_TO"))
 
-        subject = "pyLookout notifications"
+        subject = f"pyLookout on {self.info.hostname}\n"
         content = Content("text/plain", "\n".join(self.notification))
         mail = Mail(email_from, email_to, subject, content)
 
@@ -68,7 +64,9 @@ class PyLookout:
             * sendgrid
         """
         if self.method == "local":
-            [print(notification) for notification in self.notification]
+            print(f"pyLookout on {self.info.hostname}\n")
+            for notification in self.notification:
+                print(notification)
         elif self.method == "simplepush":
             self._simple_push()
         elif self.method == "sendgrid":
