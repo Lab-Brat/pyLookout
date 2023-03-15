@@ -12,6 +12,17 @@ class PyLookout:
         self.critical = threshold
         self.method = method
 
+    def _notification(self, metric, percent):
+        """
+        Notification message.
+        """
+        msg = (
+            f"Alert on host {self.info.hostname}!\n"
+            f"Metric: {metric}\n"
+            f"Utilization: {percent}%\n"
+        )
+        return msg
+
     def _stressed(self, metric, percent):
         """
         Compare a metric with the critical value.
@@ -30,7 +41,7 @@ class PyLookout:
             {
                 "key": api_key,
                 "title": "pyLookout!",
-                "msg": f"Danger! ---> {metric} = {percent}",
+                "msg": self._notification(metric, percent),
                 "event": "event",
             }
         ).encode()
@@ -46,7 +57,7 @@ class PyLookout:
         email_to = To(getenv("SENDGRID_TO"))
 
         subject = "pyLookout notifications"
-        content = Content("text/plain", f"Danger! ---> {metric} = {percent}")
+        content = Content("text/plain", self._notification(metric, percent))
         mail = Mail(email_from, email_to, subject, content)
 
         response = SendGridAPIClient(api_key).client.mail.send.post(
@@ -65,7 +76,7 @@ class PyLookout:
             * sendgrid
         """
         if self.method == "local":
-            print(f"Danger! ---> {metric} = {percent}")
+            print(self._notification(metric, percent))
         elif self.method == "simplepush":
             self._simple_push(metric, percent)
         elif self.method == "sendgrid":
@@ -95,7 +106,7 @@ class PyLookout:
         for disk in self.info.disks_info.values():
             self._stressed("DISK", disk["du_percent"])
 
-        self._containers_status(self.info.containers)
+        # self._containers_status(self.info.containers)
 
 
 def main():

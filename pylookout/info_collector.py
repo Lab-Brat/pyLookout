@@ -12,6 +12,9 @@ from dataclasses import dataclass, field
 
 @dataclass
 class Collector:
+    # Hostname
+    hostname: str = os.uname()[1]
+
     # CPU information
     cpu_total: str = cpu_count(logical=True)
     cpu_detail: dict = field(default_factory=dict)
@@ -75,7 +78,6 @@ class Collector:
             "id": inspect["Id"][0:12],
             "id_full": inspect["Id"],
             "image": inspect["Config"]["Image"],
-            "command": " ".join(inspect["Config"]["Cmd"]),
             "created": inspect["Created"],
             "started": inspect["State"]["StartedAt"],
             "status": inspect["State"]["Status"],
