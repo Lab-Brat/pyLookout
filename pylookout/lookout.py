@@ -11,8 +11,9 @@ class PyLookout:
         self.info = Collector()
         self.critical = threshold
         self.method = method
+        self.notification = ""
 
-    def _notification(self, metric, percent):
+    def _messge_percent(self, metric, percent):
         """
         Notification message.
         """
@@ -41,7 +42,7 @@ class PyLookout:
             {
                 "key": api_key,
                 "title": "pyLookout!",
-                "msg": self._notification(metric, percent),
+                "msg": self._messge_percent(metric, percent),
                 "event": "event",
             }
         ).encode()
@@ -57,7 +58,7 @@ class PyLookout:
         email_to = To(getenv("SENDGRID_TO"))
 
         subject = "pyLookout notifications"
-        content = Content("text/plain", self._notification(metric, percent))
+        content = Content("text/plain", self._messge_percent(metric, percent))
         mail = Mail(email_from, email_to, subject, content)
 
         response = SendGridAPIClient(api_key).client.mail.send.post(
@@ -76,7 +77,7 @@ class PyLookout:
             * sendgrid
         """
         if self.method == "local":
-            print(self._notification(metric, percent))
+            print(self._messge_percent(metric, percent))
         elif self.method == "simplepush":
             self._simple_push(metric, percent)
         elif self.method == "sendgrid":
@@ -106,7 +107,7 @@ class PyLookout:
         for disk in self.info.disks_info.values():
             self._stressed("DISK", disk["du_percent"])
 
-        # self._containers_status(self.info.containers)
+        self._containers_status(self.info.containers)
 
 
 def main():
