@@ -13,6 +13,7 @@ class PyLookout:
         self.info = Collector(check_containers)
         self.critical = threshold
         self.method = method
+        self.containers = check_containers
         self.notification = []
 
     def _messge_percent(self, metric, percent):
@@ -109,3 +110,6 @@ class PyLookout:
 
         if self.containers:
             self._containers_status(self.info.containers)
+
+        if self.notification:
+            self._notify()
