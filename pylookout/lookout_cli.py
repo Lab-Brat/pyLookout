@@ -11,12 +11,11 @@ from .lookout import PyLookout
     default="local",
     help="Send notifications: simplepush, sendgrid or locally?",
 )
-def cli(threshold, mode):
+@click.option(
+    "--containers", is_flag=True, default=False, help="Monitor containers?"
+)
+def cli(threshold, mode, containers):
     """
     Cli interface to easily pass parameters to PyLookout
     """
-    PyLookout(threshold, mode).checker()
-
-
-if __name__ == "__main__":
-    cli()
+    PyLookout(threshold, mode, containers).checker()

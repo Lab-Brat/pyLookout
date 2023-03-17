@@ -7,8 +7,10 @@ from sendgrid.helpers.mail import Mail, Email, To, Content
 
 
 class PyLookout:
-    def __init__(self, threshold=75, method="sendgrid"):
-        self.info = Collector()
+    def __init__(
+        self, threshold=75, method="sendgrid", check_containers=False
+    ):
+        self.info = Collector(check_containers)
         self.critical = threshold
         self.method = method
         self.notification = []
@@ -105,18 +107,5 @@ class PyLookout:
         for disk in self.info.disks_info.values():
             self._stressed("DISK", disk["du_percent"])
 
-        self._containers_status(self.info.containers)
-
-        if self.notification:
-            self._notify()
-
-
-def main():
-    threshold = 75
-    notification_method = "simplepush"
-    lk = PyLookout(threshold, notification_method)
-    lk.checker()
-
-
-if __name__ == "__main__":
-    main()
+        if self.containers:
+            self._containers_status(self.info.containers)

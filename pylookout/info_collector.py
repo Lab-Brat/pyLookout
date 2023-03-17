@@ -7,11 +7,15 @@ from psutil import (
     disk_partitions,
     disk_usage,
 )
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, InitVar
 
 
 @dataclass
 class Collector:
+    # Containers info
+    check_containers: InitVar[bool]
+    containers: dict = field(default_factory=dict)
+
     # Hostname
     hostname: str = os.uname()[1]
 
@@ -30,10 +34,7 @@ class Collector:
     partitions: list = field(default_factory=list)
     disks_info: dict = field(default_factory=dict)
 
-    # Containers info
-    containers: dict = field(default_factory=dict)
-
-    def __post_init__(self):
+    def __post_init__(self, check_containers):
         self.cpu_detail = {
             f"Core{i}": p
             for i, p in enumerate(cpu_percent(percpu=True, interval=1))
@@ -49,7 +50,7 @@ class Collector:
             if "loop" not in part.device and "boot" not in part.mountpoint
         ]
         self.disks_info = self._disks_info()
-        self.containers = self._get_containers()
+        self.containers = self._get_containers() if check_containers else {}
 
     def _disks_info(self):
         """
@@ -81,6 +82,7 @@ class Collector:
             "created": inspect["Created"],
             "started": inspect["State"]["StartedAt"],
             "status": inspect["State"]["Status"],
+            "ports": inspect["NetworkSettings"]["Ports"],
         }
 
     def _get_containers(self):
@@ -113,10 +115,3 @@ class Collector:
             if bytes < factor:
                 return f"{bytes:.2f}{unit}{suffix}"
             bytes /= factor
-
-
-if __name__ == "__main__":
-    cc = Collector()
-    from pprint import pprint
-
-    pprint(cc.containers)
