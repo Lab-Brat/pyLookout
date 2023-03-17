@@ -7,11 +7,13 @@ from sendgrid.helpers.mail import Mail, Email, To, Content
 
 
 class PyLookout:
-    def __init__(self, threshold=75, method="sendgrid", containers=False):
-        self.info = Collector(containers)
+    def __init__(
+        self, threshold=75, method="sendgrid", check_containers=False
+    ):
+        self.info = Collector(check_containers)
         self.critical = threshold
         self.method = method
-        self.containers = containers
+        self.containers = check_containers
 
     def _stressed(self, metric, percent):
         """

@@ -7,11 +7,15 @@ from psutil import (
     disk_partitions,
     disk_usage,
 )
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, InitVar
 
 
 @dataclass
 class Collector:
+    # Containers info
+    check_containers: InitVar[bool]
+    containers: dict = field(default_factory=dict)
+
     # CPU information
     cpu_total: str = cpu_count(logical=True)
     cpu_detail: dict = field(default_factory=dict)
@@ -27,10 +31,7 @@ class Collector:
     partitions: list = field(default_factory=list)
     disks_info: dict = field(default_factory=dict)
 
-    # Containers info
-    containers: dict = field(default_factory=dict)
-
-    def __post_init__(self, containers=False):
+    def __post_init__(self, check_containers):
         self.cpu_detail = {
             f"Core{i}": p
             for i, p in enumerate(cpu_percent(percpu=True, interval=1))
@@ -46,7 +47,7 @@ class Collector:
             if "loop" not in part.device and "boot" not in part.mountpoint
         ]
         self.disks_info = self._disks_info()
-        self.containers = self._get_containers() if containers else {}
+        self.containers = self._get_containers() if check_containers else {}
 
     def _disks_info(self):
         """
@@ -75,7 +76,6 @@ class Collector:
             "id": inspect["Id"][0:12],
             "id_full": inspect["Id"],
             "image": inspect["Config"]["Image"],
-            "command": " ".join(inspect["Config"]["Cmd"]),
             "created": inspect["Created"],
             "started": inspect["State"]["StartedAt"],
             "status": inspect["State"]["Status"],
