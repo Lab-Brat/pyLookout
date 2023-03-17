@@ -30,7 +30,7 @@ class Collector:
     # Containers info
     containers: dict = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self, containers=False):
         self.cpu_detail = {
             f"Core{i}": p
             for i, p in enumerate(cpu_percent(percpu=True, interval=1))
@@ -46,7 +46,7 @@ class Collector:
             if "loop" not in part.device and "boot" not in part.mountpoint
         ]
         self.disks_info = self._disks_info()
-        self.containers = self._get_containers()
+        self.containers = self._get_containers() if containers else {}
 
     def _disks_info(self):
         """
@@ -79,6 +79,7 @@ class Collector:
             "created": inspect["Created"],
             "started": inspect["State"]["StartedAt"],
             "status": inspect["State"]["Status"],
+            "ports": inspect["NetworkSettings"]["Ports"],
         }
 
     def _get_containers(self):
