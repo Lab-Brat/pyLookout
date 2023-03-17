@@ -19,7 +19,3 @@ def cli(threshold, mode, containers):
     Cli interface to easily pass parameters to PyLookout
     """
     PyLookout(threshold, mode, containers).checker()
-
-
-if __name__ == "__main__":
-    cli()

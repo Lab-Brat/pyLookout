@@ -112,10 +112,3 @@ class Collector:
             if bytes < factor:
                 return f"{bytes:.2f}{unit}{suffix}"
             bytes /= factor
-
-
-if __name__ == "__main__":
-    cc = Collector()
-    from pprint import pprint
-
-    pprint(cc.containers)

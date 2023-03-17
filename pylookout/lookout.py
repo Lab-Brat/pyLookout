@@ -98,14 +98,3 @@ class PyLookout:
 
         if self.containers:
             self._containers_status(self.info.containers)
-
-
-def main():
-    threshold = 75
-    notification_method = "local"
-    lk = PyLookout(threshold, notification_method)
-    lk.checker()
-
-
-if __name__ == "__main__":
-    main()
