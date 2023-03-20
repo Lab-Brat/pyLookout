@@ -41,21 +41,26 @@ class PyLookout:
         msg = f"Metric: {metric} ===> Utilization: {percent}%"
         return msg
 
+    def _format_message(self, stage):
+        """
+        Format notification message.
+        """
+        total_length = 66
+        text_length = 24 + len(self.info.hostname)
+        eq = (total_length - text_length) // 2
+        return (
+            f"{eq*'='}"
+            f" pyLookout {stage} on {self.info.hostname} "
+            f"{eq*'='}\n"
+        )
+
     def _adjust_message(self):
         """
         Adjust notification message.
         """
         if self.notification != []:
-            title = (
-                f"============= "
-                f"pyLookout on {self.info.hostname} "
-                f"=============\n"
-            )
-            ending = (
-                f"============= "
-                f"pyLookout finished on {self.info.hostname} "
-                f"=============\n"
-            )
+            title = self._format_message("launching")
+            ending = self._format_message("finished")
             self.notification.insert(0, title)
             self.notification.append(ending)
 
@@ -128,6 +133,7 @@ class PyLookout:
                     f"CONTAINER {name} ({container['id']}) "
                     f"{container['status'].upper()}"
                 )
+        self.notification[-1] += "\n"
 
     def _stressed(self, metric, percent):
         """
