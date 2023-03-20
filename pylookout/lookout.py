@@ -1,4 +1,5 @@
 from os import getenv
+from time import sleep
 from urllib import request, parse
 from .info_collector import Collector
 
@@ -8,7 +9,11 @@ from sendgrid.helpers.mail import Mail, Email, To, Content
 
 class PyLookout:
     def __init__(
-        self, threshold=75, method="sendgrid", check_containers=False
+        self,
+        threshold=75,
+        method="sendgrid",
+        check_containers=False,
+        background=False,
     ):
         self.info = Collector(check_containers)
         self.critical = threshold
@@ -113,3 +118,11 @@ class PyLookout:
 
         if self.notification:
             self._notify()
+
+    def run_in_background(self):
+        """
+        Run checker in background.
+        """
+        while True:
+            self.checker()
+            sleep(60)

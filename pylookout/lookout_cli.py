@@ -14,8 +14,15 @@ from .lookout import PyLookout
 @click.option(
     "--containers", is_flag=True, default=False, help="Monitor containers?"
 )
-def cli(threshold, mode, containers):
+@click.option(
+    "--background", is_flag=True, default=False, help="Run in background?"
+)
+def cli(threshold, mode, containers, background):
     """
     Cli interface to easily pass parameters to PyLookout
     """
-    PyLookout(threshold, mode, containers).checker()
+    lookout = PyLookout(threshold, mode, containers)
+    if background:
+        lookout.run_in_background()
+    else:
+        lookout.checker()
