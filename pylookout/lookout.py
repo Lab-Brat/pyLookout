@@ -38,8 +38,26 @@ class PyLookout:
         """
         Notification message.
         """
-        msg = f"Metric: {metric}\nUtilization: {percent}%\n"
+        msg = f"Metric: {metric} ===> Utilization: {percent}%"
         return msg
+
+    def _adjust_message(self):
+        """
+        Adjust notification message.
+        """
+        if self.notification != []:
+            title = (
+                f"============= "
+                f"pyLookout on {self.info.hostname} "
+                f"=============\n"
+            )
+            ending = (
+                f"============= "
+                f"pyLookout finished on {self.info.hostname} "
+                f"=============\n"
+            )
+            self.notification.insert(0, title)
+            self.notification.append(ending)
 
     def _simple_push(self):
         """
@@ -89,8 +107,8 @@ class PyLookout:
             * simplepush
             * sendgrid
         """
+        self._adjust_message()
         if self.method == "local":
-            self.logger.info(f"pyLookout on {self.info.hostname}\n")
             for notification in self.notification:
                 self.logger.info(notification)
         elif self.method == "simplepush":
@@ -108,7 +126,7 @@ class PyLookout:
                 name = container["name"].replace("/", "")
                 self.notification.append(
                     f"CONTAINER {name} ({container['id']}) "
-                    f"{container['status'].upper()}\n"
+                    f"{container['status'].upper()}"
                 )
 
     def _stressed(self, metric, percent):
