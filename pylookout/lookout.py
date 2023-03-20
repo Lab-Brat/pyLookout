@@ -1,3 +1,5 @@
+import logging
+from pathlib import Path
 from os import getenv
 from time import sleep
 from urllib import request, parse
@@ -15,7 +17,18 @@ class PyLookout:
         check_containers=False,
         background=False,
     ):
+        logging.basicConfig(
+            format="%(asctime)s %(message)s",
+            level=logging.INFO,
+            handlers=[
+                logging.FileHandler(f"{str(Path.home())}/.pylookout.log"),
+                logging.StreamHandler(),
+            ],
+        )
+
+        self.logger = logging.getLogger()
         self.info = Collector(check_containers)
+        self.logger.info("Informaton collected successfully!")
         self.critical = threshold
         self.method = method
         self.containers = check_containers
@@ -43,6 +56,9 @@ class PyLookout:
         ).encode()
         req = request.Request("https://api.simplepush.io/send", data=data)
         request.urlopen(req)
+        self.logger.info("Notification sent successfully!")
+        self.logger.info("Notification message:")
+        self.logger.info(self.notification)
 
     def _sendgrid(self):
         """
@@ -61,7 +77,9 @@ class PyLookout:
         )
 
         if response.status_code == 202:
-            print("Email sent succsessfully!")
+            self.logger.info("Email sent succsessfully!")
+            self.logger.info("Emailed message:")
+            self.logger.info(self.notification)
 
     def _notify(self):
         """
@@ -72,9 +90,9 @@ class PyLookout:
             * sendgrid
         """
         if self.method == "local":
-            print(f"pyLookout on {self.info.hostname}\n")
+            self.logger.info(f"pyLookout on {self.info.hostname}\n")
             for notification in self.notification:
-                print(notification)
+                self.logger.info(notification)
         elif self.method == "simplepush":
             self._simple_push()
         elif self.method == "sendgrid":
@@ -124,5 +142,7 @@ class PyLookout:
         Run checker in background.
         """
         while True:
+            self.logger.info("Running checker...")
             self.checker()
+            self.logger.info("Checker finished. Sleeping for 60 seconds...")
             sleep(60)
