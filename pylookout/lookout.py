@@ -51,7 +51,7 @@ class PyLookout:
         return (
             f"{eq*'='}"
             f" pyLookout {stage} on {self.info.hostname} "
-            f"{eq*'='}\n"
+            f"{eq*'='}"
         )
 
     def _adjust_message(self):
@@ -59,7 +59,7 @@ class PyLookout:
         Adjust notification message.
         """
         if self.notification != []:
-            title = self._format_message("launching")
+            title = self._format_message("starting")
             ending = self._format_message("finished")
             self.notification.insert(0, title)
             self.notification.append(ending)
@@ -133,7 +133,6 @@ class PyLookout:
                     f"CONTAINER {name} ({container['id']}) "
                     f"{container['status'].upper()}"
                 )
-        self.notification[-1] += "\n"
 
     def _stressed(self, metric, percent):
         """
