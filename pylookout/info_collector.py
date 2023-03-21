@@ -22,7 +22,8 @@ class Collector:
     # CPU information
     cpu_total: str = cpu_count(logical=True)
     cpu_detail: dict = field(default_factory=dict)
-    cpu_percent: str = cpu_percent()
+    # do not calculate CPU usage if there is only one core
+    cpu_percent: str = cpu_percent() if cpu_count() > 1 else 0
 
     # RAM information
     ram_total: str = field(default_factory=str)
@@ -35,10 +36,12 @@ class Collector:
     disks_info: dict = field(default_factory=dict)
 
     def __post_init__(self, check_containers):
-        self.cpu_detail = {
-            f"Core{i}": p
-            for i, p in enumerate(cpu_percent(percpu=True, interval=1))
-        }
+        # do not calculate CPU usage if there is only one core
+        self.cpu_detail = (
+            {f"Core{i}": p for i, p in enumerate(cpu_percent(percpu=True))}
+            if cpu_count() > 1
+            else {"Core": 0}
+        )
 
         self.ram_total = self._convert_bytes(ram().total)
         self.ram_avail = self._convert_bytes(ram().available)
