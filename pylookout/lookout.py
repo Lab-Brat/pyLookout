@@ -113,6 +113,7 @@ class PyLookout:
         """
         self._adjust_message()
         if self.method == "local":
+            print(self.info.logins)
             for notification in self.notification:
                 self.logger.info(notification)
         elif self.method == "simplepush":
@@ -132,6 +133,18 @@ class PyLookout:
                     f"CONTAINER {name} ({container['id']}) "
                     f"{container['status'].upper()}"
                 )
+
+    def _add_login_info(self):
+        """
+        Add login information to notification message.
+        """
+        if self.info.logins:
+            user_ips = ""
+            for login in self.info.logins:
+                user_ips += f"{login['user']}->{login['ip']} "
+            self.notification.append(
+                f"{len(self.info.logins)} active logins: {user_ips}"
+            )
 
     def _stressed(self, metric, percent):
         """
@@ -155,6 +168,8 @@ class PyLookout:
 
         if self.containers:
             self._containers_status(self.info.containers)
+
+        self._add_login_info()
 
         if self.notification:
             self._notify()
