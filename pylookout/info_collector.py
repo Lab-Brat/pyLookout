@@ -35,6 +35,9 @@ class Collector:
     partitions: list = field(default_factory=list)
     disks_info: dict = field(default_factory=dict)
 
+    # Login information
+    logins: list = field(default_factory=list)
+
     def __post_init__(self, check_containers):
         # do not calculate CPU usage if there is only one core
         self.cpu_detail = (
@@ -53,6 +56,7 @@ class Collector:
             if "loop" not in part.device and "boot" not in part.mountpoint
         ]
         self.disks_info = self._disks_info()
+        self.logins = self._get_logins()
         self.containers = self._get_containers() if check_containers else {}
 
     def _disks_info(self):
@@ -105,6 +109,23 @@ class Collector:
             container = self._inspect_container(inspect)
             containers_parsed[container["id"]] = container
         return containers_parsed
+
+    def _get_logins(self):
+        logins = []
+        logins_bash = os.popen("who").read().split("\n")
+        for login in logins_bash:
+            who_info = login.split()
+            if who_info:
+                logins.append(
+                    {
+                        "user": who_info[0],
+                        "tty": who_info[1],
+                        "date": who_info[2],
+                        "time": who_info[3],
+                        "ip": who_info[4][1:-1],
+                    }
+                )
+        return logins
 
     def _convert_bytes(self, bytes, suffix="B"):
         """
