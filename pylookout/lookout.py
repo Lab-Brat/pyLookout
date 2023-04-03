@@ -13,9 +13,8 @@ class PyLookout:
     def __init__(
         self,
         threshold=75,
-        method="sendgrid",
+        method="local",
         check_containers=False,
-        background=False,
     ):
         logging.basicConfig(
             format="%(asctime)s %(message)s",
@@ -28,7 +27,7 @@ class PyLookout:
 
         self.logger = logging.getLogger()
         self.info = Collector(check_containers)
-        self.logger.info("Informaton collected successfully!")
+        self.logger.info("Information collected successfully!")
         self.critical = threshold
         self.method = method
         self.containers = check_containers
