@@ -69,9 +69,7 @@ class PyLookout:
         """
         self._adjust_message()
         if self.method == "local":
-            print(self.info.logins)
-            for notification in self.notification:
-                self.logger.info(notification)
+            [self.logger.info(line) for line in self.notification]
 
         elif self.method == "simplepush":
             simple_push(self.info.hostname, self.notification)
