@@ -39,7 +39,6 @@ class Collector:
     logins: list = field(default_factory=list)
 
     def __post_init__(self, check_containers):
-        # do not calculate CPU usage if there is only one core
         self.cpu_detail = (
             {f"Core{i}": p for i, p in enumerate(cpu_percent(percpu=True))}
             if cpu_count() > 1
@@ -111,6 +110,9 @@ class Collector:
         return containers_parsed
 
     def _get_logins(self):
+        """
+        Get information about current active logins.
+        """
         logins = []
         logins_bash = os.popen("who").read().split("\n")
         for login in logins_bash:
