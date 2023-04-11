@@ -1,12 +1,8 @@
 import logging
 from pathlib import Path
-from os import getenv
 from time import sleep
-from urllib import request, parse
 from .info_collector import Collector
-
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Email, To, Content
+from .notification_methods import simple_push, sendgrid
 
 
 class PyLookout:
@@ -63,46 +59,6 @@ class PyLookout:
             self.notification.insert(0, title)
             self.notification.append(ending)
 
-    def _simple_push(self):
-        """
-        Send notifications using Simplepush.
-        """
-        api_key = getenv("SIMPLEPUSH")
-        data = parse.urlencode(
-            {
-                "key": api_key,
-                "title": f"pyLookout on {self.info.hostname}\n",
-                "msg": "\n".join(self.notification),
-                "event": "event",
-            }
-        ).encode()
-        req = request.Request("https://api.simplepush.io/send", data=data)
-        request.urlopen(req)
-        self.logger.info("Notification sent successfully!")
-        self.logger.info("Notification message:")
-        self.logger.info(self.notification)
-
-    def _sendgrid(self):
-        """
-        Send notifications using SengGrid.
-        """
-        api_key = getenv("SENDGRID_API_KEY")
-        email_from = Email(getenv("SENDGRID_FROM"))
-        email_to = To(getenv("SENDGRID_TO"))
-
-        subject = f"pyLookout on {self.info.hostname}\n"
-        content = Content("text/plain", "\n".join(self.notification))
-        mail = Mail(email_from, email_to, subject, content)
-
-        response = SendGridAPIClient(api_key).client.mail.send.post(
-            request_body=mail.get()
-        )
-
-        if response.status_code == 202:
-            self.logger.info("Email sent succsessfully!")
-            self.logger.info("Emailed message:")
-            self.logger.info(self.notification)
-
     def _notify(self):
         """
         Send a notification.
@@ -116,10 +72,19 @@ class PyLookout:
             print(self.info.logins)
             for notification in self.notification:
                 self.logger.info(notification)
+
         elif self.method == "simplepush":
-            self._simple_push()
+            simple_push(self.info.hostname, self.notification)
+            self.logger.info("Notification sent successfully!")
+            self.logger.info("Notification message:")
+            [self.logger.info(line) for line in self.notification]
+
         elif self.method == "sendgrid":
-            self._sendgrid()
+            status_code = sendgrid(self.info.hostname, self.notification)
+            if status_code == 202:
+                self.logger.info("Email sent succsessfully!")
+                self.logger.info("Emailed message:")
+                [self.logger.info(line) for line in self.notification]
 
     def _containers_status(self, containers):
         """
