@@ -10,6 +10,7 @@ class PyLookout:
         self,
         threshold=75,
         method="local",
+        logins=1,
         check_containers=False,
     ):
         logging.basicConfig(
@@ -26,6 +27,7 @@ class PyLookout:
         self.logger.info("Information collected successfully!")
         self.critical = threshold
         self.method = method
+        self.logins = logins
         self.containers = check_containers
         self.notification = []
 
@@ -103,11 +105,13 @@ class PyLookout:
         """
         if self.info.logins:
             user_ips = ""
-            for login in self.info.logins:
+            for i, login in enumerate(self.info.logins):
                 user_ips += f"{login['user']}->{login['ip']} "
-            self.notification.append(
-                f"{len(self.info.logins)} active logins: {user_ips}"
-            )
+
+            if i > self.logins:
+                self.notification.append(
+                    f"{len(self.info.logins)} active logins: {user_ips}"
+                )
 
     def _stressed(self, metric, percent):
         """
