@@ -8,10 +8,10 @@ from .notification_methods import simple_push, sendgrid
 class PyLookout:
     def __init__(
         self,
-        threshold=75,
-        method="local",
-        logins=1,
-        check_containers=False,
+        threshold,
+        method,
+        logins,
+        check_containers,
     ):
         logging.basicConfig(
             format="%(asctime)s %(message)s",
@@ -108,7 +108,7 @@ class PyLookout:
             for i, login in enumerate(self.info.logins):
                 user_ips += f"{login['user']}->{login['ip']} "
 
-            if i > self.logins:
+            if i + 1 > self.logins:
                 self.notification.append(
                     f"{len(self.info.logins)} active logins: {user_ips}"
                 )
