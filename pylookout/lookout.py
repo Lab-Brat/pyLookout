@@ -1,6 +1,7 @@
+import os
 import logging
-from pathlib import Path
 from time import sleep
+from pathlib import Path
 from .info_collector import Collector
 from .notification_methods import simple_push, sendgrid
 
@@ -150,3 +151,20 @@ class PyLookout:
             self.checker()
             self.logger.info("Checker finished. Sleeping for 60 seconds...")
             sleep(60)
+
+    def create_config(self, flags=""):
+        """
+        Create a systemd service file.
+        """
+        user = os.getenv("USER")
+        service_file = f"/home/{user}/.config/systemd/user/pylookout.service"
+        with open(service_file, "w+") as file:
+            file.write("[Unit]\n")
+            file.write("Description=Launch pyLookout monitoring app\n\n")
+            file.write("[Service]\n")
+            file.write(
+                f"ExecStart=/home/{user}/.local/bin/pylookout {flags}\n\n"
+            )
+            file.write("[Install]\n")
+            file.write("WantedBy=default.target\n\n")
+        os.system("systemctl --user daemon-reload")
